@@ -1,33 +1,33 @@
 #!/usr/bin/env python
 ##############################################################################
-# 
+#
 # Copyright (C) Zenoss, Inc. 2007, all rights reserved.
-# 
+#
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
-# 
+#
 ##############################################################################
 
-
-__doc__="""zenbuild
+"""zenbuild
 
 Build the zentinel portal object and the dmd database
 
-$Id: DmdBuilder.py,v 1.11 2004/04/06 22:33:07 edahl Exp $"""
-
-__version__ = "$Revision: 1.11 $"[11:-2]
+"""
 
 import os
-import Globals
-import transaction
 import subprocess
 import sys
+import transaction
 
-from Products.ZenUtils.Utils import zenPath
+from Products.PluggableAuthService import plugins
+# import_products() required to allow importing of Zenoss Products.
+from OFS.Application import import_products
+import_products()
 
 from Products.ZenUtils import Security
 from Products.ZenUtils.CmdBase import CmdBase
-from Products.PluggableAuthService import plugins
+from Products.ZenUtils.Utils import zenPath
+
 
 class zenbuild(CmdBase):
 

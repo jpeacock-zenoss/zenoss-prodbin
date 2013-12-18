@@ -1082,6 +1082,8 @@ def binPath(fileName):
     @return: path to file or '' if not found
     @rtype: string
     """
+    if fileName == "python":
+        return "python"
     # bin and libexec are the usual suspect locations
     paths = [zenPath(d, fileName) for d in ('bin', 'libexec')]
     # $ZOPEHOME/bin is an additional option for appliance

@@ -13,7 +13,9 @@ from datetime import datetime
 
 from zope.component import getUtility
 
-import Globals
+from OFS.Application import import_products
+import_products()
+
 from Products.ZenUtils.Utils import zenPath, monkeypatch
 from Products.ZenUtils.ZenDaemon import ZenDaemon
 from Products.ZenUtils.ZodbFactory import IZodbFactoryLookup

@@ -12,9 +12,14 @@ import signal
 import time
 import logging
 import json
-import zope.interface
+
+from zope import interface
+from zope import component
+from zope.component.factory import Factory
+
 from twisted.internet import defer,  reactor, task
 from twisted.python.failure import Failure
+
 from Products.ZenCollector.interfaces import ICollector,\
                                              ICollectorPreferences,\
                                              IDataService,\
@@ -32,11 +37,38 @@ from Products.ZenUtils.deprecated import deprecated
 from Products.ZenUtils.picklezipper import Zipper
 from Products.ZenUtils.observable import ObservableProxy
 
+from .interfaces import ICollectorFactory
+from .tasks import SimpleTaskFactory, SimpleTaskSplitter
+
 log = logging.getLogger("zen.daemon")
 
 
+class CollectorDaemonFactory(Factory):
+    interface.implements(ICollectorFactory)
+
+    def __init__(self, callable, preferences, task,
+            taskfactory, tasksplitter,
+            title='', description='', interfaces=None):
+        """
+        """
+        super(CollectorDaemonFactory, self).__init__(
+            callable, title, description, interfaces
+        )
+        self._preferences = preferences
+        self._task = task
+        self._factory = taskfactory
+        self._splitter = tasksplitter
+
+    def __call__(self, *args, **kw):
+        factory = self._factory(self._task)
+        splitter = self._splitter(factory)
+        prefs = self._preferences()
+        prefs.collectorName = self.title
+        return super(CollectorDaemonFactory, self).__call__(prefs, splitter)
+
+
 class DummyListener(object):
-    zope.interface.implements(IConfigurationListener)
+    interface.implements(IConfigurationListener)
     
     def deleted(self, configurationId):
         """
@@ -59,7 +91,7 @@ class DummyListener(object):
 
 
 class ConfigListenerNotifier(object):
-    zope.interface.implements(IConfigurationListener)
+    interface.implements(IConfigurationListener)
 
     _listeners = []
 
@@ -89,7 +121,7 @@ class ConfigListenerNotifier(object):
 
 
 class DeviceGuidListener(object):
-    zope.interface.implements(IConfigurationListener)
+    interface.implements(IConfigurationListener)
 
     def __init__(self, daemon):
         self._daemon = daemon
@@ -127,7 +159,7 @@ class CollectorDaemon(RRDDaemon):
     the gap between the older daemon framework and ZenCollector. New collectors
     no longer should extend this class to implement a new collector.
     """
-    zope.interface.implements(ICollector,
+    interface.implements(ICollector,
                               IDataService,
                               IEventService)
 
@@ -187,9 +219,9 @@ class CollectorDaemon(RRDDaemon):
         # register the various interfaces we provide the rest of the system so
         # that collector implementors can easily retrieve a reference back here
         # if needed
-        zope.component.provideUtility(self, ICollector)
-        zope.component.provideUtility(self, IEventService)
-        zope.component.provideUtility(self, IDataService)
+        component.provideUtility(self, ICollector)
+        component.provideUtility(self, IEventService)
+        component.provideUtility(self, IDataService)
 
         # setup daemon statistics
         self._statService = StatisticsService()
@@ -199,11 +231,11 @@ class CollectorDaemon(RRDDaemon):
         self._statService.addStatistic("taskCount", "GAUGE")
         self._statService.addStatistic("queuedTasks", "GAUGE")
         self._statService.addStatistic("missedRuns", "GAUGE")
-        zope.component.provideUtility(self._statService, IStatisticsService)
+        component.provideUtility(self._statService, IStatisticsService)
 
         # register the collector's own preferences object so it may be easily
         # retrieved by factories, tasks, etc.
-        zope.component.provideUtility(self.preferences,
+        component.provideUtility(self.preferences,
                                       ICollectorPreferences,
                                       self.preferences.collectorName)
 
@@ -223,7 +255,7 @@ class CollectorDaemon(RRDDaemon):
             self._completedTasks = 0
             self._pendingTasks = []
 
-        frameworkFactory = zope.component.queryUtility(IFrameworkFactory, self._frameworkFactoryName)
+        frameworkFactory = component.queryUtility(IFrameworkFactory, self._frameworkFactoryName)
         self._configProxy = frameworkFactory.getConfigurationProxy()
         self._scheduler = frameworkFactory.getScheduler()
         self._scheduler.maxTasks = self.options.maxTasks
@@ -268,7 +300,7 @@ class CollectorDaemon(RRDDaemon):
                                default=60,
                                help='How often to write internal statistics value in seconds')
 
-        frameworkFactory = zope.component.queryUtility(IFrameworkFactory, self._frameworkFactoryName)
+        frameworkFactory = component.queryUtility(IFrameworkFactory, self._frameworkFactoryName)
         if hasattr(frameworkFactory, 'getFrameworkBuildOptions'):
             # During upgrades we'll be missing this option
             self._frameworkBuildOptions = frameworkFactory.getFrameworkBuildOptions()
@@ -764,7 +796,7 @@ class CollectorDaemon(RRDDaemon):
 
 
 class Statistic(object):
-    zope.interface.implements(IStatistic)
+    interface.implements(IStatistic)
 
     def __init__(self, name, type):
         self.value = 0
@@ -773,7 +805,7 @@ class Statistic(object):
 
 
 class StatisticsService(object):
-    zope.interface.implements(IStatisticsService)
+    interface.implements(IStatisticsService)
 
     def __init__(self):
         self._stats = {}

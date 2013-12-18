@@ -25,6 +25,9 @@ import transaction
 from zenoss.protocols.services import ServiceException
 from ZODB.POSException import ConflictError
 
+from OFS.Application import import_products
+import_products()
+
 from Products.ZenMessaging.audit import audit
 from Products.ZenMessaging.queuemessaging.schema import removeZenPackQueuesExchanges
 from Products.ZenModel.ZenPack import (
