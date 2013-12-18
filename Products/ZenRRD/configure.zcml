@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configure
+	xmlns="http://namespaces.zope.org/zope"
+	xmlns:browser="http://namespaces.zope.org/browser"
+	xmlns:zcml="http://namespaces.zope.org/zcml">
+
+  <include file="../ZenCollector/meta.zcml"/>
+
+  <collectordaemon
+    name="zencommand"
+    description="Runs plug-ins on the local box or on remote boxes through SSH"
+    preferences=".zencommand.SshPerformanceCollectionPreferences"
+    task=".zencommand.SshPerformanceCollectionTask">
+
+    <tasksplitter class=".zencommand.SshPerCycletimeTaskSplitter"/>
+
+  </collectordaemon>
+
+  <collectordaemon
+    name="zenperfsnmp"
+    description="High performance asynchronous SNMP performance collection"
+    preferences=".zenperfsnmp.SnmpPerformanceCollectionPreferences"
+    task=".zenperfsnmp.SnmpPerformanceCollectionTask"
+    />
+
+  <collectordaemon
+    name="zenprocess"
+    description="High performance asynchronous SNMP performance collection"
+    preferences=".zenprocess.ZenProcessPreferences"
+    task=".zenprocess.ZenProcessTask"
+    />
+
+</configure>

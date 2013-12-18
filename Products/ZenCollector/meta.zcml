@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configure xmlns="http://namespaces.zope.org/meta">
+  <directives namespace="http://namespaces.zope.org/zope">
+
+    <groupingDirective
+      name="collectordaemon"
+      schema=".metaconfigure.ICollectorDaemonDirective"
+      handler=".metaconfigure.CollectorDaemonDirective"
+      />
+
+    <directive
+      name="taskfactory"
+      schema=".metaconfigure.ITaskFactoryDirective"
+      handler=".metaconfigure.handleTaskFactoryDirective"
+      />
+
+    <directive
+      name="tasksplitter"
+      schema=".metaconfigure.ITaskSplitterDirective"
+      handler=".metaconfigure.handleTaskSplitterDirective"
+      />
+
+  </directives>
+</configure>
